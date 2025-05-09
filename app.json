@@ -33,7 +33,13 @@
     "plugins": [
       "expo-font",
       "expo-asset",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "react-native-document-scanner-plugin",
+        {
+          "cameraPermission": "Allow access to camera for document scanning"
+        }
+      ]
     ]
   }
 }

@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import FaIcon from 'react-native-vector-icons/FontAwesome';
+import * as FileSystem from 'expo-file-system';
 
 const loginValidationSchema = yup.object().shape({
   email: yup.string().email('Please enter a valid email').required('Email is required'),
@@ -14,15 +15,35 @@ const loginValidationSchema = yup.object().shape({
 
 export default function SignIn() {
   const navigation = useNavigation();
+const authenticateUser = async (values) => {
+    const fileUri = FileSystem.documentDirectory + 'cred.json';
 
+    try {
+      const fileExists = await FileSystem.getInfoAsync(fileUri);
+      if (!fileExists.exists) throw new Error('No accounts found. Please sign up first.');
+
+      const credentials = JSON.parse(await FileSystem.readAsStringAsync(fileUri));
+      const user = credentials.find(cred => cred.email === values.email && cred.password === values.password);
+
+      if (user) {
+        Alert.alert('Login Successful!', 'Welcome to TVET Connect!');
+        navigation.navigate('TabTwo');
+      } else {
+        Alert.alert('Login Failed', 'Invalid email or password.');
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
   return (
     <View style={styles.container}>
       <Image source={logo} style={styles.logo} />
       <Text style={styles.title}>Welcome to TVET Connect</Text>
       <Text style={styles.subheading}>Your gateway to the TVET ecosystem in Bhutan</Text>
 
-      <Formik validationSchema={loginValidationSchema} initialValues={{ email: '', password: '' }}>
-        {({ handleChange, handleBlur, handleSubmit, values, errors, touched, isValid }) => (
+      <Formik validationSchema={loginValidationSchema} initialValues={{ email: '', password: '' }} onSubmit={values => authenticateUser(values)}>
+        {({ handleChange, handleBlur, handleSubmit, values, errors, touched, isValid  } ) => (
+          
           <>
             <View style={styles.inputContainer}>
               <Icon name="mail-outline" size={25} style={styles.icon} />

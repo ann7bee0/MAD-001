@@ -34,7 +34,7 @@ function RootNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {/* <Stack.Screen name="TVET Connect Sign In" component={SigninScreen}/> */}
       {/* <Stack.Screen name="TVET Connect Sign Up" component={SignUpScreen}/> */}
-      <Stack.Screen name="Root" component={BottomTabNavigator} />
+      <Stack.Screen name="Root" component={BottomTabNavigator} /> 
       <Stack.Screen
         name="NotFound"
         component={NotFoundScreen}

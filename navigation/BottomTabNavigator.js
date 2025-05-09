@@ -25,7 +25,7 @@ export default function BottomTabNavigator() {
         options={{
           headerShown: false,
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="camera" color={color} />
+            <TabBarIcon name="scan" color={color} />
           ),
         }}
       />

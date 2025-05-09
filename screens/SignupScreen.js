@@ -6,6 +6,8 @@ import { useNavigation } from '@react-navigation/native';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import FaIcon from 'react-native-vector-icons/FontAwesome';
+import * as FileSystem from 'expo-file-system';
+
 
 const signupValidationSchema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -18,6 +20,23 @@ const signupValidationSchema = yup.object().shape({
 
 export default function SignUp() {
   const navigation = useNavigation();
+
+  const saveCredentials = async (values) => {
+    const fileUri = FileSystem.documentDirectory + 'cred.json';
+
+    try {
+      const fileExists = await FileSystem.getInfoAsync(fileUri);
+      let credentials = fileExists.exists ? JSON.parse(await FileSystem.readAsStringAsync(fileUri)) : [];
+      credentials.push({ name: values.name, email: values.email, password: values.password });
+
+      await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(credentials), { encoding: FileSystem.EncodingType.UTF8 });
+
+      Alert.alert('Account created!', 'Your credentials have been saved locally.');
+      navigation.navigate('TVET Connect Sign In');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save credentials. Please try again.');
+    }
+  };
 
   return (
     <View style={styles.container}>
