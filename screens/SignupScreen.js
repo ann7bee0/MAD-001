@@ -10,10 +10,24 @@ import * as FileSystem from 'expo-file-system';
 
 
 const signupValidationSchema = yup.object().shape({
-  name: yup.string().required('Name is required'),
-  email: yup.string().email('Please enter a valid email').required('Email is required'),
-  password: yup.string().min(6, ({ min }) => `Password must be at least ${min} characters`).required('Password is required'),
-  confirmPassword: yup.string()
+name: yup
+    .string()
+    .matches(/^[A-Za-z\s]+$/, 'Name can only contain letters and spaces')
+    .required('Name is required'),
+  email: yup
+    .string()
+    .email('Please enter a valid email')
+    .matches(
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/,
+      'Enter a valid email address'
+    )
+    .required('Email is required'),
+  password: yup
+    .string()
+    .min(6, ({ min }) => `Password must be at least ${min} characters`)
+    .required('Password is required'),
+  confirmPassword: yup
+    .string()
     .oneOf([yup.ref('password'), null], 'Passwords must match')
     .required('Please confirm your password'),
 });

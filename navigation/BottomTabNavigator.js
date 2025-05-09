@@ -19,6 +19,16 @@ export default function BottomTabNavigator() {
       initialRouteName="TabOne"
       screenOptions={{ tabBarActiveTintColor: Colors[colorScheme].tint }}
     >
+            <BottomTab.Screen
+        name="Dashboard"
+        component={TabTwoNavigator}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="home" color={color} />
+          ),
+        }}
+      />
       <BottomTab.Screen
         name="Scanner"
         component={TabOneNavigator}
@@ -29,16 +39,7 @@ export default function BottomTabNavigator() {
           ),
         }}
       />
-      <BottomTab.Screen
-        name="TabTwo"
-        component={TabTwoNavigator}
-        options={{
-          headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="ios-code" color={color} />
-          ),
-        }}
-      />
+
     </BottomTab.Navigator>
   );
 }
