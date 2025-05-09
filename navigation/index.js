@@ -12,6 +12,7 @@ import BottomTabNavigator from "./BottomTabNavigator";
 import LinkingConfiguration from "./LinkingConfiguration";
 import SigninScreen from "../screens/SigninScreen";
 import SignUpScreen from "../screens/SignupScreen";
+// import CameraScreen from "../screens/CameraScreen";
 
 export default function Navigation({ colorScheme }) {
   return (
@@ -31,14 +32,16 @@ const Stack = createStackNavigator();
 function RootNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="TVET Connect Sign In" component={SigninScreen}/>
-      <Stack.Screen name="TVET Connect Sign Up" component={SignUpScreen}/>
+      {/* <Stack.Screen name="TVET Connect Sign In" component={SigninScreen}/> */}
+      {/* <Stack.Screen name="TVET Connect Sign Up" component={SignUpScreen}/> */}
       <Stack.Screen name="Root" component={BottomTabNavigator} />
       <Stack.Screen
         name="NotFound"
         component={NotFoundScreen}
         options={{ title: "Oops!" }}
       />
+            {/* <Stack.Screen name="CameraScreen" component={CameraScreen} /> */}
+
     </Stack.Navigator>
   );
 }

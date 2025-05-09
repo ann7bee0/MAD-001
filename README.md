@@ -12,3 +12,6 @@ Referenced Login Form
 https://chatgpt.com/c/681d81c4-52f0-800b-ade7-7c17e9ca5bee
 
 Enhance UI/UX for login page and copy it to signup page
+
+## Documentation and Guidance
+claude.ai

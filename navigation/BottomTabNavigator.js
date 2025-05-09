@@ -20,12 +20,12 @@ export default function BottomTabNavigator() {
       screenOptions={{ tabBarActiveTintColor: Colors[colorScheme].tint }}
     >
       <BottomTab.Screen
-        name="TabOne"
+        name="Scanner"
         component={TabOneNavigator}
         options={{
           headerShown: false,
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="ios-code" color={color} />
+            <TabBarIcon name="camera" color={color} />
           ),
         }}
       />
