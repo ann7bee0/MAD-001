@@ -35,22 +35,36 @@ name: yup
 export default function SignUp() {
   const navigation = useNavigation();
 
-  const saveCredentials = async (values) => {
-    const fileUri = FileSystem.documentDirectory + 'cred.json';
+const saveCredentials = async (values) => {
+  try {
+    const response = await fetch('http://192.168.0.109:4001/api/v1/users/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        passwordConfirm: values.confirmPassword // Added confirmPassword
 
-    try {
-      const fileExists = await FileSystem.getInfoAsync(fileUri);
-      let credentials = fileExists.exists ? JSON.parse(await FileSystem.readAsStringAsync(fileUri)) : [];
-      credentials.push({ name: values.name, email: values.email, password: values.password });
+      }),
+    });
 
-      await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(credentials), { encoding: FileSystem.EncodingType.UTF8 });
-
-      Alert.alert('Account created!', 'Your credentials have been saved locally.');
+    const data = await response.json();
+    
+    if (response.ok) {
+      Alert.alert('Account created!', 'Your account has been created successfully.');
       navigation.navigate('TVET Connect Sign In');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to save credentials. Please try again.');
+    } else {
+      console.log(response)
+      Alert.alert('Error', data.message || 'Failed to create account. Please try again.');
     }
-  };
+  } catch (error) {
+    console.error('Error:', error);
+    Alert.alert('Error', 'Network error. Make sure your backend server is running.');
+  }
+};
 
   return (
     <View style={styles.container}>
@@ -58,11 +72,11 @@ export default function SignUp() {
       <Text style={styles.title}>Create your TVET Connect Account</Text>
       <Text style={styles.subheading}>Join the TVET ecosystem in Bhutan</Text>
 
-      <Formik 
-        validationSchema={signupValidationSchema} 
-        initialValues={{ name: '', email: '', password: '', confirmPassword: '' }}
-        onSubmit={values => Alert.alert('Account created!', JSON.stringify(values))}
-      >
+<Formik 
+  validationSchema={signupValidationSchema} 
+  initialValues={{ name: '', email: '', password: '', confirmPassword: '' }}
+  onSubmit={values => saveCredentials(values)}
+>
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched, isValid }) => (
           <>
             <View style={styles.inputContainer}>

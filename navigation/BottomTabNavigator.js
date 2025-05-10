@@ -8,6 +8,7 @@ import { useColorScheme } from "react-native";
 import Colors from "../constants/Colors";
 import TabOneScreen from "../screens/TabOneScreen";
 import TabTwoScreen from "../screens/TabTwoScreen";
+import Profile from "../screens/Profile";
 
 const BottomTab = createBottomTabNavigator();
 
@@ -36,6 +37,16 @@ export default function BottomTabNavigator() {
           headerShown: false,
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="scan" color={color} />
+          ),
+        }}
+      />
+            <BottomTab.Screen
+        name="Portfolio"
+        component={Profile}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="person" color={color} />
           ),
         }}
       />
@@ -75,6 +86,21 @@ function TabTwoNavigator() {
         name="TabTwoScreen"
         component={TabTwoScreen}
         options={{ headerTitle: "Dashboard" }}
+      />
+    </TabTwoStack.Navigator>
+  );
+}
+
+
+const ProfileStack = createStackNavigator();
+
+function ProfileStackNavigator() {
+  return (
+    <TabTwoStack.Navigator>
+      <TabTwoStack.Screen
+        name="Profile"
+        component={Profile}
+        options={{ headerTitle: "Profile" }}
       />
     </TabTwoStack.Navigator>
   );

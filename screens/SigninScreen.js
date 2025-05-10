@@ -7,6 +7,7 @@ import { Formik } from 'formik';
 import * as yup from 'yup';
 import FaIcon from 'react-native-vector-icons/FontAwesome';
 import * as FileSystem from 'expo-file-system';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const loginValidationSchema = yup.object().shape({
   email: yup.string().email('Please enter a valid email').required('Email is required'),
@@ -16,43 +17,40 @@ const loginValidationSchema = yup.object().shape({
 export default function SignIn() {
   const navigation = useNavigation();
 const authenticateUser = async (values) => {
-  const fileUri = FileSystem.documentDirectory + 'cred.json';
-
   try {
-    const hardcodedEmail = 'admin@tvet.bt';
-  const hardcodedPassword = 'admin123';
+    const response = await fetch('http://192.168.0.109:4001/api/v1/users/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: values.email,
+        password: values.password
+      }),
+    });
 
-  if (values.email === hardcodedEmail && values.password === hardcodedPassword) {
-    Alert.alert('Login Successful!', 'Welcome to TVET Connect!');
-    navigation.navigate('Root');
-  } else {
-    Alert.alert('Login Failed', 'Invalid email or password.');
-  }
-    // const fileInfo = await FileSystem.getInfoAsync(fileUri);
-    // // if (!fileInfo.exists) throw new Error('No accounts found. Please sign up first.');
+    const data = await response.json();
+    
+if (response.ok) {
+  // Store the token from your backend
+  const user = data.data.user;
+    const token = data.token;
 
-    // const content = await FileSystem.readAsStringAsync(fileUri);
-    // const credentials = JSON.parse(content);
+    // Equivalent of: document.cookie = 'token=...'
+    await AsyncStorage.setItem('userData', JSON.stringify(user));
+    await AsyncStorage.setItem('userToken', token);
 
-    // const hardcodedEmail = 'admin@tvet.bt';
-    // const hardcodedPassword = 'admin123';
-
-    // if (!Array.isArray(credentials)) {
-    //   throw new Error('Corrupted credentials file.');
-    // }
-
-    // const user = credentials.find(
-    //   (cred) => cred.email === values.email && cred.password === values.password
-    // );
-
-    // if (user|| values.email === hardcodedEmail && values.password === hardcodedPassword) {
-    //   Alert.alert('Login Successful!', 'Welcome to TVET Connect!');
-    //   navigation.navigate('TabTwoScreen');
-    // } else {
-    //   Alert.alert('Login Failed', 'Invalid email or password.');
-    // }
+    console.log('User stored:', user);
+    console.log('Token stored:', token);
+  
+  Alert.alert('Login Successful!', 'Welcome to TVET Connect!');
+  navigation.navigate('Root');
+} else {
+      Alert.alert('Login Failed', data.message || 'Invalid email or password.');
+    }
   } catch (error) {
-    Alert.alert('Error', error.message);
+    console.error('Error:', error);
+    Alert.alert('Error', 'Network error. Make sure your backend server is running.');
   }
 };
 
