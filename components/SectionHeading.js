@@ -15,15 +15,15 @@ export default function SectionHeading({title}) {
       <Heading title={title} />
       <View style={Styles.flexCenter}>
         <TouchableOpacity onPress={() => {}}>
-          <CustomIcon
+          {/* <CustomIcon
             name="add"
             size={28}
             color={Colors.GRAY}
             style={{marginRight: 10}}
-          />
+          /> */}
         </TouchableOpacity>
         <TouchableOpacity onPress={() => {}}>
-          <CustomIcon name="pencil" size={22} color={Colors.GRAY} />
+          {/* <CustomIcon name="pencil" size={22} color={Colors.GRAY} /> */}
         </TouchableOpacity>
       </View>
     </View>

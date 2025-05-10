@@ -13,6 +13,11 @@ export default function DashboardScreen() {
     navigation.navigate("TabOneScreen");
   };
 
+    const goToProfile = () => {
+    // Assuming you have a screen named "DocumentScanner" in your navigation
+    navigation.navigate("Portfolio");
+  };
+
   // Mock stats for the dashboard
   const stats = {
     totalDocuments: 32,
@@ -31,10 +36,10 @@ export default function DashboardScreen() {
     },
     {
       id: "upload",
-      title: "Upload File",
-      icon: "cloud-upload-outline",
+      title: "Profile",
+      icon: "person-outline",
       color: "#2196F3",
-      onPress: goToDocumentScanner,
+      onPress: goToProfile,
     },
     {
       id: "search",
