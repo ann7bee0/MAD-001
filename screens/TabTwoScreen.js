@@ -13,6 +13,11 @@ export default function DashboardScreen() {
     navigation.navigate("TabOneScreen");
   };
 
+   const goToQuizzes = () => {
+    // Assuming you have a screen named "DocumentScanner" in your navigation
+    navigation.navigate("Quizzes");
+  };
+goToQuizzes
     const goToProfile = () => {
     // Assuming you have a screen named "DocumentScanner" in your navigation
     navigation.navigate("Portfolio");
@@ -50,10 +55,10 @@ export default function DashboardScreen() {
     },
     {
       id: "share",
-      title: "Share Documents",
-      icon: "share-social-outline",
+      title: "Quizzes",
+      icon: "list-outline",
       color: "#9C27B0",
-      onPress: () => console.log("Share pressed"),
+      onPress: goToQuizzes,
     },
   ];
 

@@ -5,248 +5,86 @@ import Colors from "../utils/colors";
 import Icon from "react-native-vector-icons/Entypo";
 import Heading from "../components/Heading";
 import CustomIcon from "../components/CustomIcon";
-import ShowAllFooter from "../components/ShowAllFooter";
 import SectionHeading from "../components/SectionHeading";
 import ShowPeople from "../components/Profile/ShowPeople";
-import ShowCourses from "../components/Profile/ShowCourses";
-import ShowProjects from "../components/Profile/ShowProjects";
-import ShowSkills from "../components/Profile/ShowSkills";
-import ShowLicenses from "../components/Profile/ShowLicenses";
-import ShowEducation from "../components/Profile/ShowEducation";
 import ShowExperience from "../components/Profile/ShowExperience";
+import ShowEducation from "../components/Profile/ShowEducation";
+import ShowLicenses from "../components/Profile/ShowLicenses";
+import ShowSkills from "../components/Profile/ShowSkills";
+import ShowProjects from "../components/Profile/ShowProjects";
 import Styles from "../utils/Styles";
-const API_URL = "http://192.168.0.109:4001/api/v1";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ActivityIndicator, Alert } from "react-native";
+
+// API URL
+const API_URL = "http://192.168.0.109:4001/api/v1";
 
 export default function Profile() {
   const DATA = ProfileData.default;
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [totalPoints, setTotalPoints] = useState(0);  // Total points from quiz history
+  const [highestBadge, setHighestBadge] = useState(null);  // Highest badge
 
   // Name and Bio Section
   const [username, setUsername] = useState('');
   const getUserNameFromStorage = async () => {
-  try {
-    const userDataString = await AsyncStorage.getItem("userData");
-    
-    if (userDataString) {
-      const userData = JSON.parse(userDataString);
-      return userData.name || null; // Return the name or null if it doesn't exist
-    }
-    return null;
-  } catch (error) {
-    console.error("Error retrieving user name:", error);
-    return null;
-  }
-};
-  // End
-
-
-  // Editable Bio
-  // Add these state variables
-const [isEditingBio, setIsEditingBio] = useState(false);
-const [editedBio, setEditedBio] = useState("");
-const [updatingBio, setUpdatingBio] = useState(false);
-
-const handleSaveBio = async () => {
-  try {
-    setUpdatingBio(true);
-    
-    // Get the user ID
-    const userId = await getUserIdFromStorage();
-    if (!userId) {
-      Alert.alert("Error", "User ID not found. Please login again.");
-      return;
-    }
-    
-    // Update the bio in the profile data directly
-    const updatedProfile = {
-      ...profileData,
-      info: {
-        ...profileData.info,
-        bio: editedBio
+    try {
+      const userDataString = await AsyncStorage.getItem("userData");
+      if (userDataString) {
+        const userData = JSON.parse(userDataString);
+        return userData.name || null;
       }
-    };
-
-    // Make API request to update the profile
-    const response = await fetch(`${API_URL}/profile/${userId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ info: updatedProfile.info }), // Only updating info section
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to update profile: ${response.status}`);
+      return null;
+    } catch (error) {
+      console.error("Error retrieving user name:", error);
+      return null;
     }
+  };
 
-    // Get updated profile data
-    const result = await response.json();
-    
-    // Update local state with new data
-    setProfileData(result.data.profile);
-    
-    // Exit edit mode
-    setIsEditingBio(false);
-    Alert.alert("Success", "Your bio has been updated successfully.");
-  } catch (error) {
-    console.error('Error updating bio:', error);
-    Alert.alert("Update Failed", "There was a problem updating your bio. Please try again.");
-  } finally {
-    setUpdatingBio(false);
-  }
-};
+  // Fetch quiz history data (total points and highest badge)
+  const fetchQuizHistory = async (userId) => {
+    try {
+      const res = await fetch(`${API_URL}/attempt/user/${userId}`);
+      const data = await res.json();
 
-// End
+      let highestBadge = null;
+      let totalPoints = 0;
 
+      data.data.attempts.forEach(attempt => {
+        totalPoints += attempt.score;
+        if (attempt.earned_badges.length > 0) {
+          const badge = attempt.earned_badges[0]; // Assuming first badge is highest
+          if (!highestBadge || parseFloat(badge.condition) > parseFloat(highestBadge.condition)) {
+            highestBadge = badge;
+          }
+        }
+      });
 
-  // Is editing Section
-  // Add these near your other state declarations
-  const [isEditingAbout, setIsEditingAbout] = useState(false);
-  const [editedAbout, setEditedAbout] = useState("");
-  const [updatingAbout, setUpdatingAbout] = useState(false);
-  // end
-
-  // Start
-  const updateProfileFieldArray = async (field, value) => {
-  try {
-    setLoading(true); // Show loading indicator
-    
-    // Get the user ID
-    const userId = await getUserIdFromStorage();
-    
-    console.log(`Updating ${field} for user ${userId}`);
-    console.log("New value:", JSON.stringify(value));
-    
-    // Make API request to update just this field
-    const response = await fetch(`${API_URL}/profile/${userId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ [field]: value }), // Only send the field being updated
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`API error (${response.status}):`, errorText);
-      throw new Error(`Failed to update profile: ${response.status}`);
+      setHighestBadge(highestBadge);
+      setTotalPoints(totalPoints);
+    } catch (err) {
+      console.error('Failed to fetch attempts', err);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // Get updated profile data
-    const result = await response.json();
-    
-    // Log the successful update
-    console.log(`${field} updated successfully:`, result);
-    
-    // Update local state with new data
-    setProfileData(result.data.profile);
-    
-    Alert.alert("Success", `Your ${field} has been updated successfully.`);
-    return true;
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    Alert.alert("Update Failed", `There was a problem updating your ${field}. Please try again.`);
-    throw error;
-  } finally {
-    setLoading(false); // Hide loading indicator
-  }
-};
-  // End
-
-
-
-// Add this function to your Profile component
-const updateProfileField = async (field, value) => {
-  try {
-    // Get the user ID
-    const userId = await getUserIdFromStorage();
-    
-    // Make API request to update just this field
-    const response = await fetch(`${API_URL}/profile/${userId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ [field]: value }), // Only send the field being updated
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to update profile: ${response.status}`);
-    }
-
-    // Get updated profile data
-    const result = await response.json();
-    
-    // Update local state with new data
-    setProfileData(result.data.profile);
-    
-    return true;
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    throw error;
-  }
-};
-// Editing one
-// Add this function to your Profile component
-const handleSaveAbout = async () => {
-  try {
-    setUpdatingAbout(true);
-    
-    // Call the update function
-    await updateProfileField('about', editedAbout);
-    
-    // Exit edit mode
-    setIsEditingAbout(false);
-  } catch (error) {
-    Alert.alert('Error', 'Failed to update about section');
-  } finally {
-    setUpdatingAbout(false);
-  }
-};
-// end
-
+  // Fetch profile data
   const getUserIdFromStorage = async () => {
     try {
       const userDataString = await AsyncStorage.getItem("userData");
-
       if (userDataString) {
         const userData = JSON.parse(userDataString);
-        // console.log(userData)
-        const userId = userData._id;
-        // console.log(userId)
-        return userId;
-      } else {
-        console.error("No user data found");
-        return null;
+        return userData._id;
       }
+      return null;
     } catch (error) {
       console.error("Error retrieving user data:", error);
       return null;
     }
   };
-  const createProfile = async (userId) => {
-    try {
-      const response = await fetch(`${API_URL}/profile`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user: userId }),
-      });
 
-      if (!response.ok) {
-        throw new Error(`Failed to create profile: ${response.status}`);
-      }
-
-      const createdProfile = await response.json();
-      return createdProfile;
-    } catch (error) {
-      console.error("Error creating profile:", error);
-      throw error; // Re-throw to handle in the calling function
-    }
-  };
-  // Fetch profile data
   useEffect(() => {
     let isMounted = true;
 
@@ -254,43 +92,36 @@ const handleSaveAbout = async () => {
       try {
         const userId = await getUserIdFromStorage();
         const userName = await getUserNameFromStorage();
-        setUsername(userName)
+        setUsername(userName);
+
         if (!userId) {
           console.error("No user ID available");
-          if (isMounted) setLoading(false);
+          setLoading(false);
           return;
         }
 
-        let response = await fetch(`${API_URL}/profile/${userId}`);
+        // Fetch user profile data
+        const profileRes = await fetch(`${API_URL}/profile/${userId}`);
+        const profileData = await profileRes.json();
+        setProfileData(profileData.data.profile);
 
-        // If profile doesn't exist, create one
-        if (response.status === 404) {
-          const newProfile = await createProfile(userId);
-        }
-
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log(data)
-        if (isMounted) setProfileData(data);
+        // Fetch quiz history data
+        fetchQuizHistory(userId);
       } catch (error) {
         console.log("Error fetching profile:", error);
       } finally {
-        // location.reload()
         if (isMounted) setLoading(false);
       }
     };
 
     fetchProfile();
 
-    // Cleanup function to prevent state updates on unmounted component
     return () => {
       isMounted = false;
     };
   }, []);
 
+  // Analytics component
   const Analytics = ({ title, subTitle, icon }) => (
     <View style={[Styles.flexCenter, { paddingVertical: 10 }]}>
       <CustomIcon
@@ -309,14 +140,16 @@ const handleSaveAbout = async () => {
       </View>
     </View>
   );
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color={Colors.BLUE} />
-        <Text>Loading profile...</Text>
-      </View>
-    );
-  }
+
+  // if (loading) {
+  //   return (
+  //     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+  //       <ActivityIndicator size="large" color={Colors.BLUE} />
+  //       <Text>Loading profile...</Text>
+  //     </View>
+  //   );
+  // }
+
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
       <View style={{ backgroundColor: Colors.WHITE, marginBottom: 10 }}>
@@ -344,13 +177,7 @@ const handleSaveAbout = async () => {
         </View>
 
         <View
-          style={[
-            Styles.flexCenter,
-            {
-              marginVertical: 16,
-              justifyContent: "space-evenly",
-            },
-          ]}
+          style={[Styles.flexCenter, { marginVertical: 16, justifyContent: "space-evenly" }]}
         >
           <TouchableOpacity
             onPress={() => {}}
@@ -375,10 +202,8 @@ const handleSaveAbout = async () => {
               alignItems: "center",
             }}
           >
-            <Text style={{ color: Colors.GRAY, fontSize: 19 }}>
-              Add Section
-            </Text>
-           </TouchableOpacity>
+            <Text style={{ color: Colors.GRAY, fontSize: 19 }}>Add Section</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {}}
             style={{
@@ -396,185 +221,109 @@ const handleSaveAbout = async () => {
         </View>
       </View>
 
-      <View
-        style={{ backgroundColor: Colors.WHITE, marginBottom: 10, padding: 10 }}
-      >
+      {/* Analytics Section */}
+      <View style={{ backgroundColor: Colors.WHITE, marginBottom: 10, padding: 10 }}>
         <Heading title="Analytics" />
         <View style={Styles.flexCenter}>
-          {/* <CustomIcon name="eye" size={19} color={Colors.GRAY} /> */}
-          {/* <Text> Private to you</Text> */}
+          {/* Analytics Icons */}
         </View>
+
+        {/* Display total points and highest badge */}
         <Analytics
           icon="people"
-          title={`${DATA.ANALYTICS.profile_views} total quizes`}
+          title={`Total Points: ${totalPoints}`}
           subTitle="Keep Going"
         />
-        <Analytics
-          icon="bar-chart"
-          title={`${DATA.ANALYTICS.post_impressions} highest score`}
-          subTitle="Breaking more leaderboards"
-        />
-        <Analytics
-          icon="search"
-          title={`${DATA.ANALYTICS.search_appearence} average score`}
-          subTitle="Always flying"
+        {highestBadge ? (
+          <Analytics
+            icon="bar-chart"
+            title={`Earned Badge: ${highestBadge.condition}%`}
+            subTitle="Breaking more leaderboards"
+          />
+        ) : (
+          <Analytics
+            icon="search"
+            title="No badges earned"
+            subTitle="Keep trying!"
+          />
+        )}
+
+        {/* Display badge media if available */}
+        {highestBadge && (
+          <View style={{ alignItems: "center", marginTop: 10 }}>
+            <Image
+              source={{ uri: `http://192.168.0.109:4001/${highestBadge.media}` }}
+              style={{ width: 100, height: 100, borderRadius: 50 }}
+            />
+            <Text style={{ fontSize: 16, marginTop: 5, color: Colors.GRAY }}>
+              Badge: {highestBadge.condition}%
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* About Section */}
+      <View style={{ backgroundColor: Colors.WHITE, marginBottom: 10, padding: 10 }}>
+        <Heading title="About" />
+        <Text
+          style={{ color: Colors.BLACK, fontSize: 15, textAlign: "justify" }}
+        >
+          {profileData?.about || DATA.ABOUT}
+        </Text>
+      </View>
+
+      {/* Experience Section */}
+      <View style={Styles.container}>
+        <SectionHeading title="Experience" />
+        <ShowExperience
+          DATA={profileData?.experience}
+          profileData={profileData}
         />
       </View>
-<View
-  style={{ backgroundColor: Colors.WHITE, marginBottom: 10, padding: 10 }}
->
-  <View
-    style={[
-      Styles.flexCenter,
-      {
-        justifyContent: "space-between",
-        marginBottom: 14,
-      },
-    ]}
-  >
-    <Heading title="About" />
-    <TouchableOpacity
-      onPress={() => {
-        if (isEditingAbout) {
-          // Save the changes
-          handleSaveAbout();
-        } else {
-          // Enter edit mode and initialize with current value
-          setEditedAbout(profileData?.about || DATA.ABOUT);
-          setIsEditingAbout(true);
-        }
-      }}
-      disabled={updatingAbout}
-    >
-      {updatingAbout ? (
-        <ActivityIndicator size="small" color={Colors.BLUE} />
-      ) : (
-        <CustomIcon
-          size={22}
-          name={isEditingAbout ? "check" : "pencil"}
-          color={Colors.GRAY}
-        />
-      )}
-    </TouchableOpacity>
-  </View>
 
-  {isEditingAbout ? (
-    <View>
-      <TextInput
-        value={editedAbout}
-        onChangeText={setEditedAbout}
-        style={{
-          color: Colors.BLACK,
-          fontSize: 15,
-          textAlign: "justify",
-          borderWidth: 1,
-          borderColor: Colors.GRAY,
-          borderRadius: 5,
-          padding: 10,
-          minHeight: 100,
-        }}
-        multiline
-        autoFocus
-      />
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        marginTop: 10,
-      }}>
-        <TouchableOpacity
-          onPress={() => {
-            // Cancel editing
-            setIsEditingAbout(false);
-          }}
-          style={{
-            paddingVertical: 5,
-            paddingHorizontal: 10,
-            marginRight: 10,
-          }}
-        >
-          <Text style={{ color: Colors.GRAY }}>Cancel</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          onPress={handleSaveAbout}
-          style={{
-            backgroundColor: Colors.BLUE,
-            paddingVertical: 5,
-            paddingHorizontal: 15,
-            borderRadius: 5,
-          }}
-          disabled={updatingAbout}
-        >
-          {updatingAbout ? (
-            <ActivityIndicator size="small" color={Colors.WHITE} />
-          ) : (
-            <Text style={{ color: Colors.WHITE }}>Save</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </View>
-  ) : (
-    <Text
-      style={{ color: Colors.BLACK, fontSize: 15, textAlign: "justify" }}
-    >
-      {profileData?.about || DATA.ABOUT}
-    </Text>
-  )}
-</View>
-
-<View style={Styles.container}>
-  <SectionHeading title="Experience" />
-  <ShowExperience 
-    DATA={profileData.data} 
-    profileData={profileData} 
-    updateProfileField={updateProfileFieldArray}
-  />
-  {/* <ShowAllFooter /> */}
-</View>
-
+      {/* Education Section */}
       <View style={Styles.container}>
         <SectionHeading title="Education" />
-        <ShowEducation 
-            DATA={profileData.education} 
-        profileData={profileData} 
-    updateProfileField={updateProfileFieldArray} />
+        <ShowEducation
+          DATA={profileData?.education}
+          profileData={profileData}
+        />
       </View>
 
+      {/* Licenses Section */}
       <View style={Styles.container}>
         <SectionHeading title="Licenses & Certifications" />
-        <ShowLicenses DATA={profileData.licenses} 
-        profileData={profileData} 
-    updateProfileField={updateProfileFieldArray} />
+        <ShowLicenses
+          DATA={profileData?.licenses}
+          profileData={profileData}
+        />
       </View>
 
+      {/* Skills Section */}
       <View style={Styles.container}>
         <SectionHeading title="Skills" />
-        <ShowSkills DATA={profileData.skills} 
-        profileData={profileData} 
-    updateProfileField={updateProfileFieldArray} />
+        <ShowSkills
+          DATA={profileData?.skills}
+          profileData={profileData}
+        />
       </View>
 
-      {/* <View style={Styles.container}>
-        <SectionHeading title="Courses" />
-        <ShowCourses DATA={DATA} />
-      </View> */}
-
+      {/* Projects Section */}
       <View style={Styles.container}>
         <SectionHeading title="Projects" />
-        <ShowProjects DATA={profileData.projects} 
-        profileData={profileData} 
-    updateProfileField={updateProfileFieldArray} />
+        <ShowProjects
+          DATA={profileData?.projects}
+          profileData={profileData}
+        />
       </View>
 
-      <View
-        style={[
-          Styles.container,
-          { backgroundColor: Colors.LIGHT_BLUE, marginBottom: 0 },
-        ]}
-      >
+      {/* Contact Section */}
+      <View style={[Styles.container, { backgroundColor: Colors.LIGHT_BLUE, marginBottom: 0 }]}>
         <SectionHeading title="Contact Details" />
-        <ShowPeople DATA={profileData.contact}         profileData={profileData} 
- updateProfileField={updateProfileFieldArray} />
+        <ShowPeople
+          DATA={profileData?.contact}
+          profileData={profileData}
+        />
       </View>
     </ScrollView>
   );

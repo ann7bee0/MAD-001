@@ -7,23 +7,29 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  StyleSheet,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AddQuestion from "./addQuestion";
-// import getUserNameFromStorage from "../../utils/auth_user_data/user_data"
 
-// Get UserID
+const colors = {
+  PRIMARY: "#1E88E5", // Indigo
+  WHITE: "#FFFFFF",
+  LIGHT_BACKGROUND: "#F9FAFB",
+  DARK_TEXT: "#1F2937",
+  BORDER: "#E5E7EB",
+  GRAY: "#9CA3AF",
+  LIGHT_GRAY: "#D1D5DB",
+  SUCCESS: "#10B981", // Green
+};
+
 const getUserIdFromStorage = async () => {
   try {
     const userDataString = await AsyncStorage.getItem("userData");
-
     if (userDataString) {
       const userData = JSON.parse(userDataString);
-      // console.log(userData)
-      const userId = userData._id;
-      // console.log(userId)
-      return userId;
+      return userData._id;
     } else {
       console.error("No user data found");
       return null;
@@ -33,7 +39,6 @@ const getUserIdFromStorage = async () => {
     return null;
   }
 };
-// ENd
 
 const AddQuiz = () => {
   const [title, setTitle] = useState("");
@@ -51,11 +56,9 @@ const AddQuiz = () => {
   const [questionsCount, setQuestionsCount] = useState("");
   const [userId, setUserId] = useState("");
 
-  // Add Quiz Question Section
   const [createdQuizId, setCreatedQuizId] = useState(null);
   const [showQuestions, setShowQuestions] = useState(false);
   const [questionsSaved, setQuestionsSaved] = useState([]);
-  // End
 
   const addCategory = () => {
     if (category.trim()) {
@@ -104,7 +107,6 @@ const AddQuiz = () => {
             condition: badgeCondition,
           },
         ]);
-
         setBadgeCondition("");
       }
     } catch (error) {
@@ -116,7 +118,6 @@ const AddQuiz = () => {
   const handleSubmit = async () => {
     const userId = await getUserIdFromStorage();
     const formData = new FormData();
-
     formData.append("title", title);
     formData.append("description", description);
     formData.append("duration", duration);
@@ -128,8 +129,7 @@ const AddQuiz = () => {
     categories.forEach((cat) => formData.append("category", cat));
     tags.forEach((tag) => formData.append("tags", tag));
     rules.forEach((rule) => formData.append("rules", rule));
-
-    badges.forEach((badge, index) => {
+    badges.forEach((badge) => {
       formData.append("badges", {
         uri: badge.media.uri,
         name: badge.media.name,
@@ -149,12 +149,10 @@ const AddQuiz = () => {
 
       if (res.status === 201) {
         const result = await res.json();
-        console.log(result);
         alert("Quiz created successfully!");
-
-        setCreatedQuizId(result.data.quiz._id); // Store quiz ID
+        setCreatedQuizId(result.data.quiz._id);
         setShowQuestions(true);
-        // Clear all fields after successful submission
+        // Reset form fields
         setTitle("");
         setDescription("");
         setCategory("");
@@ -167,13 +165,9 @@ const AddQuiz = () => {
         setBadges([]);
         setDuration("");
         setMaxAttempts("");
-        // setQuestionsCount("");
       } else {
         const errorResponse = await res.json();
-        console.error("Error:", errorResponse);
-        alert(
-          `Failed to create quiz: ${errorResponse.message || "Unknown error"}`
-        );
+        alert(`Failed to create quiz: ${errorResponse.message || "Unknown error"}`);
       }
     } catch (error) {
       console.error(error);
@@ -182,76 +176,75 @@ const AddQuiz = () => {
   };
 
   return (
-    <ScrollView>
-      <Text>Title</Text>
-      <TextInput value={title} onChangeText={setTitle} />
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.label}>Title</Text>
+      <TextInput value={title} onChangeText={setTitle} style={styles.input} />
 
-      <Text>Description</Text>
-      <TextInput value={description} onChangeText={setDescription} />
+      <Text style={styles.label}>Description</Text>
+      <TextInput value={description} onChangeText={setDescription} style={styles.input} />
 
-      <Text>Category</Text>
-      <TextInput value={category} onChangeText={setCategory} />
-      <Button title="Add Category" onPress={addCategory} />
+      <Text style={styles.label}>Category</Text>
+      <TextInput value={category} onChangeText={setCategory} style={styles.input} />
+      <TouchableOpacity style={styles.button} onPress={addCategory}>
+        <Text style={styles.buttonText}>Add Category</Text>
+      </TouchableOpacity>
       {categories.map((c, i) => (
-        <View key={i} style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text>• {c}</Text>
-          <TouchableOpacity
-            onPress={() => {
-              const updated = [...categories];
-              updated.splice(i, 1);
-              setCategories(updated);
-            }}
-          >
-            <Text style={{ marginLeft: 8, color: "red" }}>❌</Text>
+        <View key={i} style={styles.tagContainer}>
+          <Text style={styles.tagText}>• {c}</Text>
+          <TouchableOpacity onPress={() => {
+            const updated = [...categories];
+            updated.splice(i, 1);
+            setCategories(updated);
+          }}>
+            <Text style={styles.removeTag}>❌</Text>
           </TouchableOpacity>
         </View>
       ))}
 
-      <Text>Tag</Text>
-      <TextInput value={tag} onChangeText={setTag} />
-      <Button title="Add Tag" onPress={addTag} />
+      <Text style={styles.label}>Tag</Text>
+      <TextInput value={tag} onChangeText={setTag} style={styles.input} />
+      <TouchableOpacity style={styles.button} onPress={addTag}>
+        <Text style={styles.buttonText}>Add Tag</Text>
+      </TouchableOpacity>
       {tags.map((t, i) => (
-        <View key={i} style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text>• {t}</Text>
-          <TouchableOpacity
-            onPress={() => {
-              const updated = [...categories];
-              updated.splice(i, 1);
-              setCategories(updated);
-            }}
-          >
-            <Text style={{ marginLeft: 8, color: "red" }}>❌</Text>
+        <View key={i} style={styles.tagContainer}>
+          <Text style={styles.tagText}>• {t}</Text>
+          <TouchableOpacity onPress={() => {
+            const updated = [...tags];
+            updated.splice(i, 1);
+            setTags(updated);
+          }}>
+            <Text style={styles.removeTag}>❌</Text>
           </TouchableOpacity>
         </View>
       ))}
 
-      <Text>Rule</Text>
-      <TextInput value={rule} onChangeText={setRule} />
-      <Button title="Add Rule" onPress={addRule} />
+      <Text style={styles.label}>Rule</Text>
+      <TextInput value={rule} onChangeText={setRule} style={styles.input} />
+      <TouchableOpacity style={styles.button} onPress={addRule}>
+        <Text style={styles.buttonText}>Add Rule</Text>
+      </TouchableOpacity>
       {rules.map((r, i) => (
-        <View key={i} style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text>• {r}</Text>
-          <TouchableOpacity
-            onPress={() => {
-              const updated = [...categories];
-              updated.splice(i, 1);
-              setCategories(updated);
-            }}
-          >
-            <Text style={{ marginLeft: 8, color: "red" }}>❌</Text>
+        <View key={i} style={styles.tagContainer}>
+          <Text style={styles.tagText}>• {r}</Text>
+          <TouchableOpacity onPress={() => {
+            const updated = [...rules];
+            updated.splice(i, 1);
+            setRules(updated);
+          }}>
+            <Text style={styles.removeTag}>❌</Text>
           </TouchableOpacity>
         </View>
       ))}
 
-      <Text>Badge Condition</Text>
-      <TextInput value={badgeCondition} onChangeText={setBadgeCondition} />
-      <Button title="Add Badge" onPress={addBadge} />
+      <Text style={styles.label}>Badge Condition</Text>
+      <TextInput value={badgeCondition} onChangeText={setBadgeCondition} style={styles.input} />
+      <TouchableOpacity style={styles.button} onPress={addBadge}>
+        <Text style={styles.buttonText}>Add Badge</Text>
+      </TouchableOpacity>
       {badges.map((b, i) => (
-        <View key={i} style={{ marginBottom: 10 }}>
-          <Image
-            source={{ uri: b.media.uri }}
-            style={{ width: 60, height: 60 }}
-          />
+        <View key={i} style={styles.badgeContainer}>
+          <Image source={{ uri: b.media.uri }} style={styles.badgeImage} />
           <TextInput
             placeholder="Badge condition"
             value={b.condition}
@@ -260,46 +253,34 @@ const AddQuiz = () => {
               updated[i].condition = text;
               setBadges(updated);
             }}
+            style={styles.input}
           />
-          <TouchableOpacity
-            onPress={() => {
-              const updated = [...badges];
-              updated.splice(i, 1);
-              setBadges(updated);
-            }}
-          >
-            <Text style={{ color: "red" }}>❌ Remove Badge</Text>
+          <TouchableOpacity onPress={() => {
+            const updated = [...badges];
+            updated.splice(i, 1);
+            setBadges(updated);
+          }}>
+            <Text style={styles.removeTag}>❌ Remove Badge</Text>
           </TouchableOpacity>
         </View>
       ))}
 
-      <Text>Duration (minutes)</Text>
-      <TextInput
-        value={duration}
-        onChangeText={setDuration}
-        keyboardType="numeric"
-      />
+      <Text style={styles.label}>Duration (minutes)</Text>
+      <TextInput value={duration} onChangeText={setDuration} style={styles.input} keyboardType="numeric" />
 
-      <Text>Max Attempts</Text>
-      <TextInput
-        value={maxAttempts}
-        onChangeText={setMaxAttempts}
-        keyboardType="numeric"
-      />
+      <Text style={styles.label}>Max Attempts</Text>
+      <TextInput value={maxAttempts} onChangeText={setMaxAttempts} style={styles.input} keyboardType="numeric" />
 
-      <Text>Questions Count</Text>
-      <TextInput
-        value={questionsCount}
-        onChangeText={setQuestionsCount}
-        keyboardType="numeric"
-      />
+      <Text style={styles.label}>Questions Count</Text>
+      <TextInput value={questionsCount} onChangeText={setQuestionsCount} style={styles.input} keyboardType="numeric" />
 
-      <Button title="Submit Quiz" onPress={handleSubmit} />
+      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+        <Text style={styles.buttonText}>Submit Quiz</Text>
+      </TouchableOpacity>
+
       {showQuestions && (
-        <View style={{ padding: 20 }}>
-          <Text style={{ fontWeight: "bold" }}>
-            Now add {questionsCount} questions:
-          </Text>
+        <View style={styles.questionsWrapper}>
+          <Text style={styles.boldText}>Now add {questionsCount} questions:</Text>
           {[...Array(Number(questionsCount))].map((_, index) => (
             <AddQuestion
               key={index}
@@ -311,12 +292,90 @@ const AddQuiz = () => {
             />
           ))}
           {questionsSaved.length === Number(questionsCount) && (
-            <Text style={{ color: "green" }}>✅ All questions saved!</Text>
+            <Text style={styles.successText}>✅ All questions saved!</Text>
           )}
         </View>
       )}
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: colors.LIGHT_BACKGROUND,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.DARK_TEXT,
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: colors.WHITE,
+    borderWidth: 1,
+    borderColor: colors.BORDER,
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 16,
+    color: colors.DARK_TEXT,
+    marginBottom: 12,
+  },
+  button: {
+    backgroundColor: colors.PRIMARY,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginVertical: 8,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: colors.WHITE,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  tagContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  tagText: {
+    fontSize: 14,
+    color: colors.DARK_TEXT,
+  },
+  removeTag: {
+    color: "red",
+    marginLeft: 8,
+  },
+  badgeContainer: {
+    marginBottom: 10,
+  },
+  badgeImage: {
+    width: 60,
+    height: 60,
+  },
+  questionsWrapper: {
+    marginTop: 20,
+    padding: 20,
+    backgroundColor: colors.WHITE,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  boldText: {
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  successText: {
+    color: colors.SUCCESS,
+    marginTop: 10,
+  },
+  submitButton: {
+    backgroundColor: colors.PRIMARY,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 12,
+  },
+});
 
 export default AddQuiz;

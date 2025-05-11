@@ -177,31 +177,36 @@ const SettingsScreen = () => {
     }
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      "Log Out",
-      "Are you sure you want to log out?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Log Out",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await AsyncStorage.removeItem("userData");
-              await AsyncStorage.removeItem("token");
-              navigation.reset({
-                index: 0,
-                routes: [{ name: "Login" }],
-              });
-            } catch (error) {
-              console.error("Error during logout:", error);
-            }
-          },
+const handleLogout = () => {
+  Alert.alert(
+    "Log Out",
+    "Are you sure you want to log out?",
+    [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Log Out",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            // Remove user data and token from AsyncStorage
+            await AsyncStorage.removeItem("userData");
+            await AsyncStorage.removeItem("userToken");
+
+            // Navigate to the Sign In page (reset navigation stack to avoid going back to settings)
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "TVET Connect Sign In" }],
+            });
+          } catch (error) {
+            console.error("Error during logout:", error);
+            Alert.alert("Error", "Failed to log out. Please try again.");
+          }
         },
-      ]
-    );
-  };
+      },
+    ]
+  );
+};
+
 
   const handleDeleteAccount = () => {
     Alert.alert(

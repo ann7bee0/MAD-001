@@ -14,6 +14,7 @@ import SigninScreen from "../screens/SigninScreen";
 import SignUpScreen from "../screens/SignupScreen";
 // import CameraScreen from "../screens/CameraScreen";
 import QuizPlayScreen from "../components/Quiz/QuizPlayScreen";
+import Profile from "../screens/userProfile";
 
 export default function Navigation({ colorScheme }) {
   return (
@@ -43,6 +44,7 @@ function RootNavigator() {
       />
             {/* <Stack.Screen name="CameraScreen" component={CameraScreen} /> */}
         <Stack.Screen name="QuizPlayScreen" component={QuizPlayScreen} />
+        <Stack.Screen name="Profile" component={Profile} />
     </Stack.Navigator>
   );
 }
