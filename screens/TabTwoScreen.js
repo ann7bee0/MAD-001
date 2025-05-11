@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   },
   tipContent: {
     flex: 1,
-    backgroundColor:"none"
+    backgroundColor:"#FFF9C4"
   },
   tipTitle: {
     fontSize: 16,

@@ -9,6 +9,7 @@ import Colors from "../constants/Colors";
 import TabOneScreen from "../screens/TabOneScreen";
 import TabTwoScreen from "../screens/TabTwoScreen";
 import Profile from "../screens/Profile";
+import Settings from "../screens/settings";
 
 const BottomTab = createBottomTabNavigator();
 
@@ -50,7 +51,16 @@ export default function BottomTabNavigator() {
           ),
         }}
       />
-
+      <BottomTab.Screen
+        name="Settings"
+        component={Settings}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="settings" color={color} />
+          ),
+        }}
+      />
     </BottomTab.Navigator>
   );
 }
@@ -101,6 +111,20 @@ function ProfileStackNavigator() {
         name="Profile"
         component={Profile}
         options={{ headerTitle: "Profile" }}
+      />
+    </TabTwoStack.Navigator>
+  );
+}
+
+const SettingsStack = createStackNavigator();
+
+function SettingsStackNavigator() {
+  return (
+    <TabTwoStack.Navigator>
+      <TabTwoStack.Screen
+        name="Settings"
+        component={Settings}
+        options={{ headerTitle: "Settings" }}
       />
     </TabTwoStack.Navigator>
   );
