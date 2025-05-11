@@ -10,6 +10,7 @@ import TabOneScreen from "../screens/TabOneScreen";
 import TabTwoScreen from "../screens/TabTwoScreen";
 import Profile from "../screens/Profile";
 import Settings from "../screens/settings";
+import QuizPage from "../screens/quizzes"
 
 const BottomTab = createBottomTabNavigator();
 
@@ -48,6 +49,16 @@ export default function BottomTabNavigator() {
           headerShown: false,
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="person" color={color} />
+          ),
+        }}
+      />
+            <BottomTab.Screen
+        name="Quizzes"
+        component={QuizPage}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="list" color={color} />
           ),
         }}
       />
@@ -111,6 +122,20 @@ function ProfileStackNavigator() {
         name="Profile"
         component={Profile}
         options={{ headerTitle: "Profile" }}
+      />
+    </TabTwoStack.Navigator>
+  );
+}
+
+const QuizStack = createStackNavigator();
+
+function QuizStackNavigator() {
+  return (
+    <TabTwoStack.Navigator>
+      <TabTwoStack.Screen
+        name="Quizzes"
+        component={QuizPage}
+        options={{ headerTitle: "Quizzes" }}
       />
     </TabTwoStack.Navigator>
   );
