@@ -13,6 +13,7 @@ import LinkingConfiguration from "./LinkingConfiguration";
 import SigninScreen from "../screens/SigninScreen";
 import SignUpScreen from "../screens/SignupScreen";
 // import CameraScreen from "../screens/CameraScreen";
+import QuizPlayScreen from "../components/Quiz/QuizPlayScreen";
 
 export default function Navigation({ colorScheme }) {
   return (
@@ -41,7 +42,7 @@ function RootNavigator() {
         options={{ title: "Oops!" }}
       />
             {/* <Stack.Screen name="CameraScreen" component={CameraScreen} /> */}
-
+        <Stack.Screen name="QuizPlayScreen" component={QuizPlayScreen} />
     </Stack.Navigator>
   );
 }
