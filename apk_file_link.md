@@ -1,4 +1,4 @@
-https://expo.dev/artifacts/eas/dQ1uJX1iKj2xJSmZnyYztV.apk
+https://expo.dev/artifacts/eas/bxsp9PtkdhcDNekhXRAvTE.apk
 
 
 ## Reason for APK file failure on github
